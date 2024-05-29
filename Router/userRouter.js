@@ -10,5 +10,7 @@ router.post("/",userController.loginPost)
 router.get("/signup",userController.signupGet)
 // signup post
 router.post("/signup",userController.signupPost)
+// Otp verification page
+router.get('/otpVerify',userController.otpGet)
 
 module.exports = router

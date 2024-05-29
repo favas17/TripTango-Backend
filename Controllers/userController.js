@@ -2,6 +2,12 @@ const userModel = require("../Models/userModel")
 const bcrypt = require("bcrypt");
 
 
+// genarates otp of 4 numbers
+const GenarateOtp = ()=>{
+    return Math.floor(1000+Math.random()*9000)
+}
+
+
 const hash = async (password)=>{
     try{
       return bcrypt.hash(password,10)
@@ -16,9 +22,39 @@ const loginGet = async (req,res)=>{
 }
 
 // login Post
-const loginPost = (req,res)=>{
-    const {names} = req.body
-    res.send(names)
+const loginPost = async (req,res)=>{
+    // destructuring the email and password
+    const {email,password} = req.body
+    
+    // checks any field is empty
+    if(email == "" || password == ""){
+        return res.status(400).json({message:"Please fill the field correctly"})
+    }
+
+    try {
+        // check the user doc is in db by checking with the email
+        const userExist = await userModel.findOne({email:email})
+
+        // if user not exist
+        if(!userExist){
+            return res.status(400).json({message:"Email don't exist"}) 
+          }
+
+        //   if user exist checks the password using bcrypt compare
+        const passwordMatch = await bcrypt.compare(password,userExist.password)
+
+        // if the password is incorrect
+        if(!passwordMatch){
+            return res.status(401).json({message:"Incorrect Password"})
+        }
+
+        // when everything is ok
+        return res.status(200).json({message:"Log in success"})
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({message:"Internal server error"})
+    }
 }
 
 // signup get
@@ -28,38 +64,63 @@ const signupGet = async (req,res)=>{
 
 // signup post
 const signupPost = async (req,res)=>{
+
+
+    // destructure all the values
     const {names,email,password,confirm_password} = req.body;   
 
-    
+    // checks if any fields value is empty
+    if(names=="" || email=="" || password=="" || confirm_password==""){
+        // if empty sends a message to frontend
+        return res.status(400).json({message:"please fill all the fields"})
+    }
 
+    // checks the password and confirm password value is same
+    if(password !== confirm_password){
+        return res.status(400).json({message:"password and confirm password need to be same"})
+     }
+
+
+
+    // find any document db matches the email 
     const existingUser = await userModel.findOne({email:email})
     try{
-        if(password !== confirm_password){
-           return res.status(400).send({message:"password and confirm password need to be same"})
-        }
-
+        
+        // if matches send user exist
         if(existingUser){
-        return res.status(400).send({message:"user exist"}) 
+        return res.status(400).json({message:"user exist"}) 
         }
 
-
+    // genarates otp
+    // const otps = GenarateOtp();
+    // req.session.otp = otps
+        
+    
+        // bycrypting password
         const bycryptedPass = await hash(password);
-        console.log(bycryptedPass,"hy")
 
+        // create  new userModel
         const newUser = new userModel({
             username:names,
             email:email,
             password:bycryptedPass,
-            role:"user"
+            role:"user",
         })
-    
+        // saves the new new user details
         await newUser.save()
-      return  res.status(200).send({message:newUser})
-
+        
+        res.status(201).json({message:newUser})
+        res.redirect("/otpVerify");
     }
 catch(err){
     console.log(err)
+    return res.status(500).json({message:"Internal server error"})
 }
+}
+
+// otp page
+const otpGet = async (req,res)=>{
+    const otp = req.session.otp 
 }
 
 
@@ -69,4 +130,5 @@ module.exports = {
     loginPost,
     signupGet,
     signupPost,
+    otpGet,
 }
