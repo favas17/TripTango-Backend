@@ -27,6 +27,13 @@ mongoose.connect(process.env.MONGODB_URI,)
 .then(()=> console.log("Database connected"))
 .catch((err)=> console.log(err))
 
+// global error handler
+app.use((err,req,res,next)=>{
+   console.error(err);
+   res.status(500).json({message:"Something went wrong"})
+})
+
+// Calling the cron service
 cronService.init();
 
 app.listen(

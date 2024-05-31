@@ -11,8 +11,8 @@ const GenarateOtp = ()=>{
 const hash = async (password)=>{
     try{
       return bcrypt.hash(password,10)
-    }catch(err){
-        console.log(err);
+    }catch(error){
+        next(error)
     }
 }
 
@@ -22,7 +22,7 @@ const loginGet = async (req,res)=>{
 }
 
 // login Post
-const loginPost = async (req,res)=>{
+const loginPost = async (req,res,next)=>{
     // destructuring the email and password
     const {email,password} = req.body
     
@@ -52,10 +52,11 @@ const loginPost = async (req,res)=>{
         return res.status(200).json({message:"Log in success"})
 
     } catch (error) {
-        console.log(error)
-        return res.status(500).json({message:"Internal server error"})
+        next(error)
     }
 }
+
+
 
 // signup get
 const signupGet = async (req,res)=>{
@@ -63,7 +64,7 @@ const signupGet = async (req,res)=>{
 }
 
 // signup post
-const signupPost = async (req,res)=>{
+const signupPost = async (req,res,next)=>{
 
 
     // destructure all the values
@@ -112,9 +113,8 @@ const signupPost = async (req,res)=>{
         res.status(201).json({message:newUser})
         res.redirect("/otpVerify");
     }
-catch(err){
-    console.log(err)
-    return res.status(500).json({message:"Internal server error"})
+catch(errors){
+    next(errors)
 }
 }
 
