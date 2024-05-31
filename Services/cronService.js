@@ -9,7 +9,6 @@ const task = async ()=>{
             verifiedUser:false,
             createdAt:{$lt:expiryDay}
         })
-        console.log(DeletedDocs)
     } catch (error) {
         console.log(error,"have error in deleted uunverified user")
     }
