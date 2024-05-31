@@ -7,6 +7,7 @@ const mongoose = require("mongoose")
 const PORT = process.env.PORT || 8989
 const userRouter = require("./Router/userRouter")
 const cronService = require("./Services/cronService")
+const cors = require("cors")
 
 // starts the crone service
 
@@ -19,6 +20,7 @@ app.use(session({
 }))
 
 app.use(bodyParser.json());
+app.use(cors())
 app.use('/',userRouter);
 
 

@@ -67,10 +67,10 @@ const signupPost = async (req,res,next)=>{
 
 
     // destructure all the values
-    const {names,email,password,confirm_password} = req.body;   
+    const {username,email,password,confirm_password} = req.body;   
 
     // checks if any fields value is empty
-    if(names=="" || email=="" || password=="" || confirm_password==""){
+    if(username=="" || email=="" || password=="" || confirm_password==""){
         // if empty sends a message to frontend
         return res.status(400).json({message:"please fill all the fields"})
     }
@@ -88,20 +88,16 @@ const signupPost = async (req,res,next)=>{
         
         // if matches send user exist
         if(existingUser){
-        return res.status(400).json({message:"user exist"}) 
+        return res.status(400).json({message:"User already exist!"}) 
         }
-
-    // genarates otp
-    // const otps = GenarateOtp();
-    // req.session.otp = otps
-        
+       
     
         // bycrypting password
         const bycryptedPass = await hash(password);
 
         // create  new userModel
         const newUser = new userModel({
-            username:names,
+            username:username,
             email:email,
             password:bycryptedPass,
             role:"user",
@@ -110,15 +106,18 @@ const signupPost = async (req,res,next)=>{
         // saves the new new user details
         await newUser.save()
 
+        res.status(201).json({success:true,
+            message:"User created and otp sended succesfully"});
+            
         // genarating otp
         const GenarateOtp = Math.floor(1000+Math.random()*9000);
-        req.session.otp = GenarateOtp
+        // saving otp to session
+        req.session.otp = GenarateOtp   
         
         // send the otp and email to node mailer for sending the mail
         await sendMail(email,GenarateOtp);
         
-        res.status(201).json({success:true,
-            message:"User created and otp sended succesfully"});
+        
 
     }
 catch(errors){
