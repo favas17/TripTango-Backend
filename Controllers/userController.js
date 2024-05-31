@@ -1,11 +1,9 @@
 const userModel = require("../Models/userModel")
 const bcrypt = require("bcrypt");
-
+const sendMail = require("../Utils/nodeMailer")
 
 // genarates otp of 4 numbers
-const GenarateOtp = ()=>{
-    return Math.floor(1000+Math.random()*9000)
-}
+
 
 
 const hash = async (password)=>{
@@ -47,6 +45,7 @@ const loginPost = async (req,res,next)=>{
         if(!passwordMatch){
             return res.status(401).json({message:"Incorrect Password"})
         }
+
 
         // when everything is ok
         return res.status(200).json({message:"Log in success"})
@@ -107,11 +106,20 @@ const signupPost = async (req,res,next)=>{
             password:bycryptedPass,
             role:"user",
         })
+
         // saves the new new user details
         await newUser.save()
+
+        // genarating otp
+        const GenarateOtp = Math.floor(1000+Math.random()*9000);
+        req.session.otp = GenarateOtp
         
-        res.status(201).json({message:newUser})
-        res.redirect("/otpVerify");
+        // send the otp and email to node mailer for sending the mail
+        await sendMail(email,GenarateOtp);
+        
+        res.status(201).json({success:true,
+            message:"User created and otp sended succesfully"});
+
     }
 catch(errors){
     next(errors)
@@ -123,6 +131,11 @@ const otpGet = async (req,res)=>{
     const otp = req.session.otp 
 }
 
+// otp verification post 
+const otpPost = async (req,res)=>{
+    const {otp} = req.body
+    console.log(otp)
+}
 
 
 module.exports = {
@@ -131,4 +144,5 @@ module.exports = {
     signupGet,
     signupPost,
     otpGet,
+    otpPost,
 }
