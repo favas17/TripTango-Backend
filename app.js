@@ -5,7 +5,8 @@ const bodyParser = require("body-parser")
 const session = require("express-session")
 const mongoose = require("mongoose")
 const PORT = process.env.PORT || 8989
-const userRouter = require("./Router/userRouter")
+const userRouter = require("./Router/userRoutes/userRouter");
+const packageRouter = require("./Router/agentRoutes/packageRouter")
 const cronService = require("./Services/cronService")
 const cors = require("cors")
 
@@ -20,8 +21,11 @@ app.use(session({
 }))
 
 app.use(bodyParser.json());
+app.use(express.static('public'));
 app.use(cors())
+
 app.use('/',userRouter);
+app.use('/',packageRouter);
 
 
 
