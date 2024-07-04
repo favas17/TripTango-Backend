@@ -1,6 +1,6 @@
-const userModel = require("../Models/userModel")
+const userModel = require("../../Models/userModel")
 const bcrypt = require("bcrypt");
-const sendMail = require("../Utils/nodeMailer")
+const sendMail = require("../../Utils/nodeMailer")
 
 // genarates otp of 4 numbers
 
