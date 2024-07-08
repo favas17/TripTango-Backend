@@ -7,6 +7,7 @@ const mongoose = require("mongoose")
 const PORT = process.env.PORT || 8989
 const agentRouter = require("./Router/agentRoutes/agentRouter")
 const userRouter = require("./Router/userRoutes/userRouter");
+const adminRouter = require("./Router/adminRoutes/adminRoutes")
 const cronService = require("./Services/cronService")
 const cors = require("cors")
    
@@ -26,6 +27,7 @@ app.use(cors())
 
 app.use('/',userRouter);
 app.use('/',agentRouter);
+app.use('/',adminRouter);
 
 
 mongoose.connect(process.env.MONGODB_URI,)
