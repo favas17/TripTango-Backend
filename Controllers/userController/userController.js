@@ -87,6 +87,7 @@ const signupPost = async (req,res,next)=>{
     try{
         
         // if matches send user exist
+        
         if(existingUser){
         return res.status(400).json({message:"User already exist!"}) 
         }
