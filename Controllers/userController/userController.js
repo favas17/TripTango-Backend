@@ -1,10 +1,15 @@
 const userModel = require("../../Models/userModel")
 const bcrypt = require("bcrypt");
 const sendMail = require("../../Utils/nodeMailer")
+const Razorpay = require("razorpay");
+const OrderModel = require("../../Models/orderModel");
+const crypto = require("crypto")
 
-// genarates otp of 4 numbers
-
-
+// razorpay setup
+const razorpay = new Razorpay({
+    key_id: 'rzp_test_GxkKU3BnKyKe6Z',
+    key_secret: 'I3A5ePFMmFeo5uguWpCSGVjh'
+});
 
 const hash = async (password)=>{
     try{
@@ -137,6 +142,60 @@ const otpPost = async (req,res)=>{
     console.log(otp)
 }
 
+// create razorpay order
+const createOrder = async (req, res) => {
+    try {
+        const { amount, currency, receipt } = req.body;
+
+        const options = {
+            amount: amount,
+            currency: currency,
+            receipt: receipt,
+        };
+
+        const order = await razorpay.orders.create(options);
+        res.status(201).json({ orderId: order.id });
+    } catch (error) {
+        console.error("Error creating order:", error);
+        res.status(500).json({ message: "Error creating order" });
+    }
+};
+
+// verify payment
+const verifyPayment = async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderDetails } = req.body;
+
+        const sign = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSign = crypto
+            .createHmac("sha256", "I3A5ePFMmFeo5uguWpCSGVjh")
+            .update(sign.toString())
+            .digest("hex");
+
+        if (razorpay_signature === expectedSign) {
+            // Payment is legitimate, save order details to MongoDB
+            const newOrder = new OrderModel({
+                userId: orderDetails.userId, // Assuming you have user authentication
+                packageId: orderDetails.packageId,
+                amount: orderDetails.totalPrice,
+                paymentId: razorpay_payment_id,
+                orderId: razorpay_order_id,
+                status: 'completed',
+                // Add any other relevant fields
+            });
+
+            await newOrder.save();
+
+            res.status(200).json({ success: true, message: "Payment verified successfully" });
+        } else {
+            res.status(400).json({ success: false, message: "Invalid signature" });
+        }
+    } catch (error) {
+        console.error("Error verifying payment:", error);
+        res.status(500).json({ success: false, message: "Error verifying payment" });
+    }
+};
+
 
 module.exports = {
     loginGet,
@@ -145,4 +204,6 @@ module.exports = {
     signupPost,
     otpGet,
     otpPost,
+    createOrder,
+    verifyPayment,
 }

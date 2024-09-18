@@ -11,3 +11,4 @@ router.post("/addPackage", upload.array('images', 10), agentController.packagePo
 // Agent Signup
 router.post("/agentSignup",agentController.signupPost);
 module.exports = router;
+                                

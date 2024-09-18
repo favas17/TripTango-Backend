@@ -14,5 +14,9 @@ router.post("/signup",userController.signupPost)
 router.get('/otpVerify',userController.otpGet)
 // OTP verification post
 router.post("/otpverify",userController.otpPost)
+// razorpay order creating
+router.post("/createOrder",userController.createOrder);
+// verifiying payment
+router.post("/verifyPayment",userController.verifyPayment);
 
 module.exports = router
