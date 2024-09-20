@@ -4,6 +4,8 @@ const sendMail = require("../../Utils/nodeMailer")
 const Razorpay = require("razorpay");
 const OrderModel = require("../../Models/orderModel");
 const crypto = require("crypto")
+const jwt = require("jsonwebtoken") 
+const JWT_SECRET = process.env.JWT_SECRET
 
 // razorpay setup
 const razorpay = new Razorpay({
@@ -28,7 +30,7 @@ const loginGet = async (req,res)=>{
 const loginPost = async (req,res,next)=>{
     // destructuring the email and password
     const {email,password} = req.body
-    
+    console.log(email,password,"hyhy")
     // checks any field is empty
     if(email == "" || password == ""){
         return res.status(400).json({message:"Please fill the field correctly"})
@@ -51,9 +53,18 @@ const loginPost = async (req,res,next)=>{
             return res.status(401).json({message:"Incorrect Password"})
         }
 
+        // genarate jwt token
+        const token = jwt.sign(
+            {
+                userId: userExist._id,
+                email: userExist.email,
+            },  //payload
+            JWT_SECRET, //secret code
+            {expiresIn: '1h'}  //expiry
+        );
 
-        // when everything is ok
-        return res.status(200).json({message:"Log in success"})
+        // send tocken to frontend
+        return res.status(200).json({message:"Log in success", token:token})
 
     } catch (error) {
         next(error)
