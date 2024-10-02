@@ -60,7 +60,7 @@ const loginPost = async (req,res,next)=>{
                 email: userExist.email,
             },  //payload
             JWT_SECRET, //secret code
-            {expiresIn: '1h'}  //expiry
+            {expiresIn: '24h'}  //expiry
         );
 
         // send tocken to frontend
@@ -184,20 +184,20 @@ const verifyPayment = async (req, res) => {
             .digest("hex");
 
         if (razorpay_signature === expectedSign) {
-            // Payment is legitimate, save order details to MongoDB
             const newOrder = new OrderModel({
-                userId: orderDetails.userId, // Assuming you have user authentication
+                userId: orderDetails.userId,
                 packageId: orderDetails.packageId,
                 amount: orderDetails.totalPrice,
                 paymentId: razorpay_payment_id,
                 orderId: razorpay_order_id,
                 status: 'completed',
-                // Add any other relevant fields
+                
             });
 
             await newOrder.save();
 
-            res.status(200).json({ success: true, message: "Payment verified successfully" });
+            res.status(200).json({ success: true, message: "Payment verified successfully",
+                                   orderId: razorpay_order_id, finalTotalPrice: orderDetails.totalPrice});
         } else {
             res.status(400).json({ success: false, message: "Invalid signature" });
         }
